@@ -84,6 +84,7 @@ const {WebClient} = require('@slack/client');
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
 				和了Count++;
+				continue;
 			}
 
 			if (match = record.text.match(/(錯和|聴牌|不聴罰符|流局)/)) {
@@ -97,6 +98,22 @@ const {WebClient} = require('@slack/client');
 				});
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
+				continue;
+			}
+
+			if (parseFloat(record.ts) < 1507109783.0004 && record.text.includes('現在の得点')) {
+				console.log(record);
+				urls.push(current手牌);
+				results.push({
+					配牌者: current配牌者,
+					time: new Date(parseFloat(record.ts) * 1000),
+					手牌: `images/${md5(current手牌)}.png`,
+					point: getPoint(record),
+					result: `ツモ ${get役s(record)}`,
+				});
+				current配牌者 = null;
+				current手牌 = 'https://placehold.it/900x120';
+				和了Count++;
 			}
 		}
 	}
