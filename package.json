@@ -16,5 +16,10 @@
   "bugs": {
     "url": "https://github.com/tsg-ut/mahjong-log-viewer/issues"
   },
-  "homepage": "https://github.com/tsg-ut/mahjong-log-viewer#readme"
+  "homepage": "https://github.com/tsg-ut/mahjong-log-viewer#readme",
+  "dependencies": {
+    "bulma": "^0.6.1",
+    "csv-parse": "^2.0.0",
+    "pug-cli": "^1.0.0-alpha6"
+  }
 }
