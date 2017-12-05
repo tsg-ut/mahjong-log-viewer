@@ -6,6 +6,13 @@ html(lang='ja')
 		title TSG麻雀対戦ログ
 		style
 			include node_modules/bulma/css/bulma.css
+		style.
+			.table-container {
+				overflow-y: auto;
+			}
+			img {
+				max-width: none;
+			}
 	body
 		section.hero.is-primary
 			.hero-body
@@ -15,70 +22,101 @@ html(lang='ja')
 			.container
 				h1.title ランキング
 				hr
-				table.table.is-striped
-					thead
-						tr
-							th #
-							th 名前
-							th 収支 (錯和含)
-							th 平均点
-							th 和了率
-					tbody
-						each rank, index in ranking
+				.table-container
+					table.table.is-striped
+						thead
 							tr
-								th= index + 1
-								td
-									if rank.user
-										img(src=rank.user.profile.image_24, style='vertical-align: bottom')
-										= ` @${rank.user.name}`
-								td
-									strong= `${(rank.balance > 0) ? '+' : ''}${rank.balance.toLocaleString('latn')}`
-									= ` (${(rank.balanceWith錯和 > 0) ? '+' : ''}${rank.balanceWith錯和.toLocaleString('latn')})`
-								td= `${(rank.balance > 0) ? '+' : ''}${Math.floor(rank.balance / rank.配牌Count).toLocaleString('latn')}`
-								td= `${(rank.和了Count / rank.配牌Count * 100).toFixed(2)}% (${rank.和了Count}/${rank.配牌Count})`
+								th #
+								th 名前
+								th 収支 (錯和含)
+								th 平均点
+								th 和了率
+								th 聴牌率
+						tbody
+							each rank, index in ranking
+								tr
+									th= index + 1
+									td
+										if rank.user
+											img(src=rank.user.profile.image_24, style='vertical-align: bottom')
+											= ` @${rank.user.name}`
+									td
+										strong= `${(rank.balance > 0) ? '+' : ''}${rank.balance.toLocaleString('latn')}`
+										= ` (${(rank.balanceWith錯和 > 0) ? '+' : ''}${rank.balanceWith錯和.toLocaleString('latn')})`
+									td= `${(rank.balance > 0) ? '+' : ''}${Math.floor(rank.balance / rank.配牌Count).toLocaleString('latn')}`
+									td= `${(rank.和了Count / rank.配牌Count * 100).toFixed(2)}% (${rank.和了Count}/${rank.配牌Count})`
+									td= `${(rank.聴牌Count / rank.配牌Count * 100).toFixed(2)}% (${rank.聴牌Count}/${rank.配牌Count})`
 		section.section
 			.container
-				h1.title 和了役統計
+				h1.title 統計
 				hr
-				table.table.is-striped
-					tbody
-						each yaku in 役s
-							tr
-								th= yaku[0]
-								td= yaku[1]
+				.columns
+					.column
+						.table-container
+							table.table.is-striped
+								tbody
+									each yaku in 役s
+										tr
+											th= yaku[0]
+											td= yaku[1]
+					.column
+						.table-container
+							table.table.is-striped
+								tbody
+									tr
+										th 和了
+										td= 和了Stat.get('和了')
+									tr
+										th 聴牌
+										td= 和了Stat.get('聴牌')
+									tr
+										th 不聴
+										td= 和了Stat.get('不聴')
+									tr
+										th 錯和
+										td= 和了Stat.get('錯和')
+					.column
+						.table-container
+							table.table.is-striped
+								tbody
+									each point in ['役満', '三倍満', '倍満', '跳満', '満貫', '四翻', '三翻', '二翻', '一翻']
+										tr
+											th= point
+											td= pointStat.get(point)
 		section.section
 			.container
 				h1.title 対戦履歴
 				hr
 				p= `和了率 ${(和了Count / results.length * 100).toFixed(2)}% (${和了Count}/${results.length})`
-				table.table.is-striped
-					thead
-						tr
-							th 日時
-							th 配牌者
-							th 最終手牌
-							th 結果
-							th 得点
-					tbody
-						each result in results
+				.table-container
+					table.table.is-striped
+						thead
 							tr
-								td(style='width: 12em')= result.time.toLocaleString('japanese', {timeZone: "Asia/Tokyo"})
-								td
-									if result.配牌者
-										img(src=result.配牌者.profile.image_24, style='vertical-align: bottom')
-										= ` @${result.配牌者.name}`
-								td
-									img(src=result.手牌, width='450')
-								td= result.result
-								td
-									= `${(result.point > 0) ? '+' : ''}${result.point.toLocaleString('latn')}`
-									if result.point === 12000
-										span.tag.is-info 満貫
-									if result.point === 18000
-										span.tag.is-success 跳満
-									if result.point === 24000
-										span.tag.is-danger 倍満
-									if result.point === 36000
-										span.tag.is-black 三倍満
-									if result.point === 48000
-										span.tag.is-black.is-large 役満
+								th 日時
+								th 配牌者
+								th 得点
+								th 最終手牌
+								th 結果
+						tbody
+							each result in results
+								tr
+									td(style='width: 12em')= result.time.toLocaleString('japanese', {timeZone: "Asia/Tokyo"})
+									td
+										if result.配牌者
+											img(src=result.配牌者.profile.image_24, style='vertical-align: bottom')
+											= ` @${result.配牌者.name}`
+									td
+										= `${(result.point > 0) ? '+' : ''}${result.point.toLocaleString('latn')}`
+										if result.point === 12000
+											span.tag.is-info 満貫
+										if result.point === 18000
+											span.tag.is-success 跳満
+										if result.point === 24000
+											span.tag.is-danger 倍満
+										if result.point === 36000
+											span.tag.is-black 三倍満
+										if result.point === 48000
+											span.tag.is-black.is-large 役満
+									td
+										img(src=result.手牌, width='450')
+									td= result.result

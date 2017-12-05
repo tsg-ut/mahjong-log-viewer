@@ -12,6 +12,10 @@ const md5 = (data) => {
 
 (async () => {
 	for (const url of urls) {
+		if (!url) {
+			continue;
+		}
+
 		try {
 			await promisify(fs.access)(`images/${md5(url)}.png`, fs.constants.R_OK);
 		} catch (error) {

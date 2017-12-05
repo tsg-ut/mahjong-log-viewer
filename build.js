@@ -97,6 +97,7 @@ const {WebClient} = require('@slack/client');
 					手牌: `images/${md5(current手牌)}.png`,
 					point: getPoint(record),
 					result: `${match[1].slice(0, -3)} ${get役s(record)}`,
+					type: match[1].slice(0, -3),
 				});
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
@@ -113,6 +114,7 @@ const {WebClient} = require('@slack/client');
 					手牌: `images/${md5(current手牌)}.png`,
 					point: getPoint(record),
 					result: record.text.includes('不聴立直') ? '錯和' : match[1].replace('罰符', ''),
+					type: record.text.includes('不聴立直') ? '錯和' : match[1].replace('罰符', ''),
 				});
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
@@ -127,6 +129,7 @@ const {WebClient} = require('@slack/client');
 					手牌: `images/${md5(current手牌)}.png`,
 					point: getPoint(record),
 					result: `ツモ ${get役s(record)}`,
+					type: 'ツモ',
 				});
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
@@ -144,16 +147,56 @@ const {WebClient} = require('@slack/client');
 				balanceWith錯和: 0,
 				配牌Count: 0,
 				和了Count: 0,
+				聴牌Count: 0,
 			});
 		}
 
 		const rank = ranking.get(result.配牌者);
 		ranking.set(result.配牌者, {
-			balance: rank.balance + (result.result === '錯和' ? 0 : result.point),
+			balance: rank.balance + (result.type === '錯和' ? 0 : result.point),
 			balanceWith錯和: rank.balanceWith錯和 + result.point,
 			配牌Count: rank.配牌Count + 1,
-			和了Count: rank.和了Count + (result.result.match(/(ツモ|ロン)/) ? 1 : 0),
+			和了Count: rank.和了Count + (result.type === 'ツモ' || result.type === 'ロン' ? 1 : 0),
+			聴牌Count: rank.聴牌Count + (result.type === '錯和' || result.type === '不聴' ? 0 : 1),
 		});
+	}
+
+	const 和了Stat = new Map(['和了', '聴牌', '不聴', '錯和'].map((name) => [name, 0]));
+	for (const result of results) {
+		if (result.type === 'ツモ' || result.type === 'ロン') {
+			和了Stat.set('和了', 和了Stat.get('和了') + 1);
+		} else if (result.type === '聴牌' || result.type === '流局') {
+			和了Stat.set('聴牌', 和了Stat.get('聴牌') + 1);
+		} else if (result.type === '不聴') {
+			和了Stat.set('不聴', 和了Stat.get('不聴') + 1);
+		} else if (result.type === '錯和') {
+			和了Stat.set('錯和', 和了Stat.get('錯和') + 1);
+		}
+	}
+
+	const pointStat = new Map(['一翻', '二翻', '三翻', '四翻', '満貫', '跳満', '倍満', '三倍満', '役満'].map((name) => [name, 0]));
+	for (const result of results) {
+		if (result.type === 'ツモ' || result.type === 'ロン') {
+			if (result.point >= 48000) {
+				pointStat.set('役満', pointStat.get('役満') + 1);
+			} else if (result.point >= 36000) {
+				pointStat.set('三倍満', pointStat.get('三倍満') + 1);
+			} else if (result.point >= 24000) {
+				pointStat.set('倍満', pointStat.get('倍満') + 1);
+			} else if (result.point >= 18000) {
+				pointStat.set('跳満', pointStat.get('跳満') + 1);
+			} else if (result.point >= 12000) {
+				pointStat.set('満貫', pointStat.get('満貫') + 1);
+			} else if (result.point >= 7800) {
+				pointStat.set('四翻', pointStat.get('四翻') + 1);
+			} else if (result.point >= 3900) {
+				pointStat.set('三翻', pointStat.get('三翻') + 1);
+			} else if (result.point >= 2100) {
+				pointStat.set('二翻', pointStat.get('二翻') + 1);
+			} else {
+				pointStat.set('一翻', pointStat.get('一翻') + 1);
+			}
+		}
 	}
 
 	const template = pug.compileFile('index.pug');
@@ -163,6 +206,8 @@ const {WebClient} = require('@slack/client');
 		ranking: Array.from(ranking).map(([user, data]) => ({...data, user})).filter((d) => d.user !== null).sort((a, b) => b.balance - a.balance),
 		役s: Array.from(役Map).sort((a, b) => b[1] - a[1]),
 		和了Count,
+		和了Stat,
+		pointStat,
 	});
 
 	fs.writeFileSync('index.html', html);
