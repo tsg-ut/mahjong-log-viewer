@@ -141,6 +141,7 @@ const {WebClient} = require('@slack/client');
 		if (!ranking.has(result.配牌者)) {
 			ranking.set(result.配牌者, {
 				balance: 0,
+				balanceWith錯和: 0,
 				配牌Count: 0,
 				和了Count: 0,
 			});
@@ -148,7 +149,8 @@ const {WebClient} = require('@slack/client');
 
 		const rank = ranking.get(result.配牌者);
 		ranking.set(result.配牌者, {
-			balance: rank.balance + result.point,
+			balance: rank.balance + (result.result === '錯和' ? 0 : result.point),
+			balanceWith錯和: rank.balanceWith錯和 + result.point,
 			配牌Count: rank.配牌Count + 1,
 			和了Count: rank.和了Count + (result.result.match(/(ツモ|ロン)/) ? 1 : 0),
 		});

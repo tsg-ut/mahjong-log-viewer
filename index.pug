@@ -20,7 +20,7 @@ html(lang='ja')
 						tr
 							th #
 							th 名前
-							th 収支
+							th 収支 (錯和含)
 							th 平均点
 							th 和了率
 					tbody
@@ -31,7 +31,7 @@ html(lang='ja')
 									if rank.user
 										img(src=rank.user.profile.image_24, style='vertical-align: bottom')
 										= ` @${rank.user.name}`
-								td= `${(rank.balance > 0) ? '+' : ''}${rank.balance.toLocaleString('latn')}`
+								td= `${(rank.balance > 0) ? '+' : ''}${rank.balance.toLocaleString('latn')} (${(rank.balanceWith錯和 > 0) ? '+' : ''}${rank.balanceWith錯和.toLocaleString('latn')})`
 								td= `${(rank.balance > 0) ? '+' : ''}${Math.floor(rank.balance / rank.配牌Count).toLocaleString('latn')}`
 								td= `${(rank.和了Count / rank.配牌Count * 100).toFixed(2)}% (${rank.和了Count}/${rank.配牌Count})`
 		section.section
