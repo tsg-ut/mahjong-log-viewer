@@ -7,7 +7,59 @@ html(lang='ja')
 		style
 			include node_modules/bulma/css/bulma.css
 	body
+		section.hero.is-primary
+			.hero-body
+				.container
+					h1.title TSG麻雀対戦ログ
 		section.section
 			.container
-				h1.title= name
-				p.subtitle= name
+				h1.title ランキング
+				hr
+				table.table.is-striped
+					thead
+						tr
+							th #
+							th ユーザー名
+							th 収支
+							th 配牌回数
+					tbody
+						tr
+							th 1
+							td @hakatashi
+							td +10000
+							td 10
+						tr
+							th 2
+							td @hakatashi
+							td +10000
+							td 10
+						tr
+							th 3
+							td @hakatashi
+							td +10000
+							td 10
+						tr
+							th 4
+							td @hakatashi
+							td +10000
+							td 10
+		section.section
+			.container
+				h1.title 対戦履歴
+				hr
+				table.table.is-striped
+					thead
+						tr
+							th 日時
+							th 配牌者
+							th 最終手牌
+							th 結果
+							th 得点
+					tbody
+						tr
+							td 2017-10-05T03:36:25.000Z
+							td @hakatashi
+							td
+								img(src='https://mahjong.hakatashi.com/images/%F0%9F%80%89%F0%9F%80%8A%F0%9F%80%8B%F0%9F%80%9B%F0%9F%80%9C%F0%9F%80%9D%F0%9F%80%90%F0%9F%80%91%F0%9F%80%92%F0%9F%80%92%F0%9F%80%94%F0%9F%80%84%F0%9F%80%84%F0%9F%80%93', width='450')
+							td ツモ 一盃口・門前清自摸和・立直
+							td +6,000
