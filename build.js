@@ -1,9 +1,16 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const pug = require('pug');
 const csvParse = require('csv-parse/lib/sync');
 
 const csvData = fs.readFileSync(process.argv[2] || 'messages.csv');
 const records = csvParse(csvData, {columns: true}).slice(1).sort((a, b) => parseFloat(a.ts) - parseFloat(b.ts));
+
+const md5 = (data) => {
+	const hash = crypto.createHash('md5');
+	hash.update(String(data));
+	return hash.digest('hex');
+};
 
 const get手牌 = (record) => {
 	if (record.attachments) {
@@ -40,6 +47,7 @@ const get役s = (record) => {
 }
 
 const results = [];
+const urls = [];
 let 和了Count = 0;
 
 let current配牌者 = null;
@@ -57,10 +65,11 @@ for (const record of records) {
 		}
 
 		if (match = record.text.match(/(ツモ!!!|ロン!!!)/)) {
+			urls.push(current手牌);
 			results.push({
 				配牌者: current配牌者,
 				time: new Date(parseFloat(record.ts) * 1000),
-				手牌: current手牌,
+				手牌: `images/${md5(current手牌)}.png`,
 				point: getPoint(record),
 				result: `${match[1].slice(0, -3)} ${get役s(record)}`,
 			});
@@ -70,10 +79,11 @@ for (const record of records) {
 		}
 
 		if (match = record.text.match(/(錯和|聴牌|不聴罰符|流局)/)) {
+			urls.push(current手牌);
 			results.push({
 				配牌者: current配牌者,
 				time: new Date(parseFloat(record.ts) * 1000),
-				手牌: current手牌,
+				手牌: `images/${md5(current手牌)}.png`,
 				point: getPoint(record),
 				result: record.text.includes('不聴立直') ? '錯和' : match[1].replace('罰符', ''),
 			});
@@ -101,12 +111,13 @@ for (const result of results) {
 	});
 }
 
-console.log(ranking);
-
 const template = pug.compileFile('index.pug');
 
 const html = template({
-	name: 'fuga',
+	results,
+	ranking: Array.from(ranking).map(([user, data]) => ({...data, user})).filter((d) => d.user !== null).sort((a, b) => b.balance - a.balance),
 });
 
 fs.writeFileSync('index.html', html);
+
+fs.writeFileSync('urls.json', JSON.stringify(urls));
