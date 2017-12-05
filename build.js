@@ -18,7 +18,7 @@ const get手牌 = (record) => {
 		return match[1];
 	}
 
-	return 'https://placehold.it/900x120';
+	return null;
 };
 
 const getPoint = (record) => {
@@ -43,6 +43,7 @@ const results = [];
 let 和了Count = 0;
 
 let current配牌者 = null;
+let current手牌 = 'https://placehold.it/900x120';
 for (const record of records) {
 	if (current配牌者 === null && record.text === '配牌') {
 		current配牌者 = record.user || record.usr;
@@ -50,16 +51,21 @@ for (const record of records) {
 
 	if (record.usr === 'null' || (record.subtype === 'bot_message' && record.username === 'mahjong')) {
 		let match;
+		const 手牌 = get手牌(record);
+		if (手牌 !== null) {
+			current手牌 = 手牌;
+		}
 
 		if (match = record.text.match(/(ツモ!!!|ロン!!!)/)) {
 			results.push({
 				配牌者: current配牌者,
 				time: new Date(parseFloat(record.ts) * 1000),
-				手牌: get手牌(record),
+				手牌: current手牌,
 				point: getPoint(record),
 				result: `${match[1].slice(0, -3)} ${get役s(record)}`,
 			});
 			current配牌者 = null;
+			current手牌 = 'https://placehold.it/900x120';
 			和了Count++;
 		}
 
@@ -67,14 +73,35 @@ for (const record of records) {
 			results.push({
 				配牌者: current配牌者,
 				time: new Date(parseFloat(record.ts) * 1000),
-				手牌: get手牌(record),
+				手牌: current手牌,
 				point: getPoint(record),
 				result: record.text.includes('不聴立直') ? '錯和' : match[1].replace('罰符', ''),
 			});
 			current配牌者 = null;
+			current手牌 = 'https://placehold.it/900x120';
 		}
 	}
 }
+
+const ranking = new Map();
+for (const result of results) {
+	if (!ranking.has(result.配牌者)) {
+		ranking.set(result.配牌者, {
+			balance: 0,
+			配牌Count: 0,
+			和了Count: 0,
+		});
+	}
+
+	const rank = ranking.get(result.配牌者);
+	ranking.set(result.配牌者, {
+		balance: rank.balance + result.point,
+		配牌Count: rank.配牌Count + 1,
+		和了Count: rank.和了Count + (result.result.match(/(ツモ|ロン)/) ? 1 : 0),
+	});
+}
+
+console.log(ranking);
 
 const template = pug.compileFile('index.pug');
 
