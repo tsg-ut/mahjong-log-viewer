@@ -36,8 +36,19 @@ html(lang='ja')
 								td= `${(rank.和了Count / rank.配牌Count * 100).toFixed(2)}% (${rank.和了Count}/${rank.配牌Count})`
 		section.section
 			.container
+				h1.title 和了役統計
+				hr
+				table.table.is-striped
+					tbody
+						each yaku in 役s
+							tr
+								th= yaku[0]
+								td= yaku[1]
+		section.section
+			.container
 				h1.title 対戦履歴
 				hr
+				p= `和了率 ${(和了Count / results.length * 100).toFixed(2)}% (${和了Count}/${results.length})`
 				table.table.is-striped
 					thead
 						tr

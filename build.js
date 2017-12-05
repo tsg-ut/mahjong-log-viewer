@@ -60,6 +60,23 @@ const {WebClient} = require('@slack/client');
 
 	let current配牌者 = null;
 	let current手牌 = 'https://placehold.it/900x120';
+	const 役Map = new Map();
+
+	const count役s = (record) => {
+		const 役s = get役s(record).split('・');
+		for (const 役 of 役s) {
+			if (役.startsWith('ドラ')) {
+				continue;
+			}
+
+			if (!役Map.has(役)) {
+				役Map.set(役, 0);
+			}
+
+			役Map.set(役, 役Map.get(役) + 1);
+		}
+	};
+
 	for (const record of records) {
 		if (current配牌者 === null && record.text === '配牌') {
 			current配牌者 = membersMap.get(record.user || record.usr);
@@ -84,6 +101,7 @@ const {WebClient} = require('@slack/client');
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
 				和了Count++;
+				count役s(record);
 				continue;
 			}
 
@@ -113,6 +131,7 @@ const {WebClient} = require('@slack/client');
 				current配牌者 = null;
 				current手牌 = 'https://placehold.it/900x120';
 				和了Count++;
+				count役s(record);
 			}
 		}
 	}
@@ -140,6 +159,8 @@ const {WebClient} = require('@slack/client');
 	const html = template({
 		results,
 		ranking: Array.from(ranking).map(([user, data]) => ({...data, user})).filter((d) => d.user !== null).sort((a, b) => b.balance - a.balance),
+		役s: Array.from(役Map).sort((a, b) => b[1] - a[1]),
+		和了Count,
 	});
 
 	fs.writeFileSync('index.html', html);
