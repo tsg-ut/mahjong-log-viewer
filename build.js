@@ -102,7 +102,6 @@ const {WebClient} = require('@slack/client');
 			}
 
 			if (parseFloat(record.ts) < 1507109783.0004 && record.text.includes('現在の得点')) {
-				console.log(record);
 				urls.push(current手牌);
 				results.push({
 					配牌者: current配牌者,
